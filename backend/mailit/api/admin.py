@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import TempInbox, Email
 
-# Register your models here.
+admin.site.register(TempInbox)
+admin.site.register(Email)
