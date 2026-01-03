@@ -88,9 +88,10 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
             <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
           </button>
           
-          <button className="group relative px-12 py-6 bg-transparent border border-white/10 text-zinc-500 hover:text-white font-black uppercase tracking-[0.3em] transition-all text-[10px] hover:bg-white/5 overflow-hidden">
+          <button
+           className="group relative px-12 py-6 bg-transparent border border-white/10 text-zinc-500 hover:text-white font-black uppercase tracking-[0.3em] transition-all text-[10px] hover:bg-white/5 overflow-hidden">
              <div className="absolute inset-0 w-0 group-hover:w-full bg-white/5 transition-all duration-300" />
-             <span className="relative z-10">How it works</span>
+             <a href="#HIW" className="relative z-10">How it works</a>
           </button>
         </motion.div>
       </motion.div>

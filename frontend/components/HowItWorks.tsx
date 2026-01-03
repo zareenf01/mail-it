@@ -55,7 +55,7 @@ const HowItWorks: React.FC = () => {
   }, [isHovering]);
 
   return (
-    <div className="py-56 bg-black overflow-visible relative">
+    <div className="py-56 bg-black overflow-visible relative" id="HIW">
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[900px] h-[900px] bg-red-950/15 blur-[200px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">

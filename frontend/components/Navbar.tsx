@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Mail, Orbit } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 interface NavbarProps {
   onLogoClick: () => void;
@@ -40,12 +41,13 @@ const Navbar: React.FC<NavbarProps> = ({ onLogoClick }) => {
         </div>
 
         <div className="flex items-center gap-6">
+          <Link to="/inbox">
           <button 
-            onClick={() => window.location.hash = 'inbox'}
             className="group relative px-6 py-2.5 bg-zinc-950 border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all hover:bg-white hover:text-black overflow-hidden"
           >
             <span className="relative z-10">Go to Inbox</span>
           </button>
+          </Link>
         </div>
       </div>
       <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-red-900/20 to-transparent" />
