@@ -64,3 +64,21 @@ def dummy_emails(request, email):
 
     serializer = EmailSerializer(email_obj)
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(['GET'])
+def inbox_details(request, email):
+    try:
+        inbox = TempInbox.objects.get(email=email)
+    except TempInbox.DoesNotExist:
+        return Response({
+            "error": "inbox does not exists"
+        },
+        status=status.HTTP_404_NOT_FOUND)
+    
+    inbox_data = TempInboxSerializer(inbox).data
+    email_data = EmailSerializer(inbox.emails.all().order_by("-received_at"), many=True).data
+
+    return Response({
+        "inbox": inbox_data,
+        "emails": email_data
+    })
