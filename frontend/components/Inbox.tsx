@@ -11,8 +11,9 @@ import {
   ShieldCheck,
   Mail
 } from 'lucide-react';
-import { generateEmailAddress, generateMockEmail } from '../services/emailService';
 import { Email } from '../types';
+import { create_inbox, inboxDetails, dummyEmail } from './request';
+import { data } from 'react-router-dom';
 
 const Inbox: React.FC = () => {
   const [emailAddress, setEmailAddress] = useState('');
@@ -22,36 +23,57 @@ const Inbox: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    setEmailAddress(generateEmailAddress());
-    const initialTimer = setTimeout(() => receiveNewEmail(), 3000);
-    const interval = setInterval(() => {
-      if (Math.random() > 0.85) receiveNewEmail();
-    }, 8000);
+    const initInbox = async() =>{
+      const inbox = await create_inbox();
+      setEmailAddress(inbox.email);
+    }
 
-    return () => {
-      clearTimeout(initialTimer);
-      clearInterval(interval);
-    };
-  }, []);
+    initInbox();
+  }, [])
 
-  const receiveNewEmail = useCallback(() => {
-    const newMail = generateMockEmail();
-    setEmails(prev => [newMail, ...prev]);
-  }, []);
+  useEffect(() => {
+    if(!emailAddress) return;
+    const fetchEmails = async() => {
+      const data = await inboxDetails(emailAddress);
+      setEmails(
+        data.emails.map((e: any) => ({
+          ...e,
+          body: e.body,
+          timestamp: new Date(e.received_at).toLocaleString(),
+        }))
+      );
+    }
 
-  const handleRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setIsRefreshing(false);
-      receiveNewEmail();
-    }, 600);
-  };
+    fetchEmails();
 
-  const handleRegenerate = () => {
-    setEmailAddress(generateEmailAddress());
-    setEmails([]);
-    setSelectedEmail(null);
-  };
+    const interval = setInterval(fetchEmails, 5000)
+    clearInterval(interval)
+  }, [emailAddress])
+
+const handleRefresh = async () => {
+  if (!emailAddress) return;
+
+  setIsRefreshing(true);
+  await dummyEmail(emailAddress);
+
+  const data = await inboxDetails(emailAddress);
+  setEmails(
+    data.emails.map((e: any) => ({
+      ...e,
+      timestamp: new Date(e.received_at).toLocaleString(),
+    }))
+  );
+
+  setIsRefreshing(false);
+};
+
+
+const handleRegenerate = async() => {
+  const data = await create_inbox();
+  setEmailAddress(data.email)
+  setEmails([])
+  setSelectedEmail(null)
+}
 
   return (
     <div className="max-w-7xl mx-auto px-6 pt-32 pb-12 min-h-[calc(100vh-140px)] flex flex-col gap-8 relative">
@@ -157,7 +179,7 @@ const Inbox: React.FC = () => {
                       {email.subject}
                     </h4>
                     <p className="text-[11px] text-zinc-600 truncate font-light">
-                      {email.content}
+                      {email.body}
                     </p>
                   </motion.button>
                 ))
@@ -203,7 +225,7 @@ const Inbox: React.FC = () => {
                 <div className="p-10 flex-grow bg-black/40">
                   <div className="p-8 border border-white/5 bg-zinc-950/50 font-light text-zinc-400 leading-relaxed text-sm tracking-tight relative">
                     <ShieldCheck className="absolute top-4 right-4 w-5 h-5 text-red-900/20" />
-                    {selectedEmail.content}
+                    {selectedEmail.body}
                     <div className="mt-20 pt-8 border-t border-zinc-900 text-[10px] text-zinc-700 mono">
                       REF: {Math.random().toString(36).substring(7).toUpperCase()}
                     </div>

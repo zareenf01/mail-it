@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,6 +8,7 @@ from .models import TempInbox, Email
 from .serializer import TempInboxSerializer, EmailSerializer
 import uuid
 
+@csrf_exempt
 @api_view(['POST'])
 def create_inbox(request):
     random_email = f"{uuid.uuid4().hex[:8]}@temp.mailit.dev"
@@ -44,7 +46,7 @@ def get_emails(request, email):
 
     return Response(serializer.data)
     
-
+@csrf_exempt
 @api_view(['POST'])
 def dummy_emails(request, email):
     try:
