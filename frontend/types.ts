@@ -6,6 +6,7 @@ export interface Email {
   body: string;
   timestamp?: string;
   received_at: string;
+  is_read: boolean;
 }
 
 export type ViewState = 'landing' | 'inbox';

@@ -84,3 +84,18 @@ def inbox_details(request, email):
         "inbox": inbox_data,
         "emails": email_data
     })
+
+@api_view(['PATCH'])
+def mark_read(request, email_id):
+    try:
+        email = Email.objects.get(id = email_id)
+    except Email.DoesNotExist:
+        return Response({
+            "error": "email does not exists"
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    email.is_read = True
+    email.save()
+
+    serializer = EmailSerializer(email)
+    return Response(serializer.data)
