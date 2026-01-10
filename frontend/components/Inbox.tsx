@@ -26,9 +26,20 @@ const Inbox: React.FC = () => {
     const initInbox = async() =>{
       const inbox = await create_inbox();
       setEmailAddress(inbox.email);
+
+      await dummyEmail(inbox.email);
+
+      const data = await inboxDetails(inbox.email);
+      setEmails(
+        data.emails.map((e: any) => ({
+      ...e,
+      timestamp: new Date(e.received_at).toLocaleString(),
+    }))
+  );
     }
 
     initInbox();
+    
   }, [])
 
   useEffect(() => {
@@ -48,7 +59,7 @@ const Inbox: React.FC = () => {
 
     const interval = setInterval(fetchEmails, 5000)
     clearInterval(interval)
-  }, [emailAddress])
+  }, [])
 
 const handleRefresh = async () => {
   if (!emailAddress) return;
