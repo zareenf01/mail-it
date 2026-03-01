@@ -5,7 +5,7 @@ urlpatterns = [
     path("inbox/create/", create_inbox),
     path("inbox/<str:email>/", get_inbox),
     path("inbox/<str:email>/emails/", get_emails),
-    path("inbox/<str:email>/add-email/", dummy_emails),
-    path("inbox/<str:email>/detail/", inbox_details),
-    path("inbox/<int:emai_idl>/read/", mark_read)
+    path("inbox/<int:inbox_id>/add-email/", dummy_emails),
+    path("inbox/<int:inbox_id>/detail/", inbox_details),
+    path("inbox/<int:email_id>/read/", mark_read)
 ]

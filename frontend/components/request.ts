@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { data } from 'react-router-dom';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL
+const baseURL = 'http://localhost:8000/api';
 
 export const create_inbox = async () => {
     try{
@@ -14,9 +14,9 @@ export const create_inbox = async () => {
 
 }
 
-export const inboxDetails = async (email: string) => {
+export const inboxDetails = async (inboxId: number) => {
     try{
-        const response = await axios.get(`${baseURL}/inbox/${encodeURIComponent(email)}/detail/`)
+        const response = await axios.get(`${baseURL}/inbox/${inboxId}/detail/`)
         console.log("inbox details fetched successfully", response.data.emails)
         return response.data
     } catch(e){
@@ -25,12 +25,19 @@ export const inboxDetails = async (email: string) => {
 
 }
 
-export const dummyEmail = async (email: string) => {
+export const dummyEmail = async (inboxId: number) => {
     try{
-        const response = await axios.post(`${baseURL}/inbox/${encodeURIComponent(email)}/add-email/`)
+        const response = await axios.post(`${baseURL}/inbox/${inboxId}/add-email/`)
         console.log("dummy emails created successfully", response.data)
         return response.data
     } catch(e){
         console.log("Error creating dummy emails", e)
     }
 }
+
+export const markEmailRead = async (emailId: number) => {
+  const res = await axios.patch(
+    `${baseURL}/email/${emailId}/read/`
+  );
+  return res.data;
+};

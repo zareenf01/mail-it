@@ -41,16 +41,16 @@ def get_emails(request, email):
         },
         status=status.HTTP_404_NOT_FOUND)
     
-    emails = inbox.emails.all().order_by("-recieved_at")
+    emails = inbox.emails.all().order_by("-received_at")
     serializer = EmailSerializer(emails, many=True)
 
     return Response(serializer.data)
     
 @csrf_exempt
 @api_view(['POST'])
-def dummy_emails(request, email):
+def dummy_emails(request, inbox_id):
     try:
-        inbox = TempInbox.objects.get(email=email)
+        inbox = TempInbox.objects.get(id=inbox_id)
     except TempInbox.DoesNotExist:
         return Response({
             "error": "inbox does not exists"
@@ -68,9 +68,9 @@ def dummy_emails(request, email):
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @api_view(['GET'])
-def inbox_details(request, email):
+def inbox_details(request, inbox_id):
     try:
-        inbox = TempInbox.objects.get(email=email)
+        inbox = TempInbox.objects.get(id=inbox_id)
     except TempInbox.DoesNotExist:
         return Response({
             "error": "inbox does not exists"
@@ -99,3 +99,9 @@ def mark_read(request, email_id):
 
     serializer = EmailSerializer(email)
     return Response(serializer.data)
+
+@api_view(['DELETE'])
+def delete_inbox(request, inbox_id):
+    inbox = TempInbox.objects.get(id=inbox_id)
+    inbox.delete()
+    return Response({"message": "Inbox deleted"})

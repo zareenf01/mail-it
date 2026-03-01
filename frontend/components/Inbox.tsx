@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   RefreshCw, 
@@ -12,10 +11,10 @@ import {
   Mail
 } from 'lucide-react';
 import { Email } from '../types';
-import { create_inbox, inboxDetails, dummyEmail } from './request';
-import { data } from 'react-router-dom';
+import { create_inbox, inboxDetails, dummyEmail, markEmailRead } from './request';
 
 const Inbox: React.FC = () => {
+  const [inboxId, setInboxId] = useState<number | null>(null);
   const [emailAddress, setEmailAddress] = useState('');
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
@@ -23,68 +22,89 @@ const Inbox: React.FC = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const initInbox = async() =>{
+    const initInbox = async () => {
       const inbox = await create_inbox();
+
+      setInboxId(inbox.id);
       setEmailAddress(inbox.email);
 
-      await dummyEmail(inbox.email);
+      await dummyEmail(inbox.id);
 
-      const data = await inboxDetails(inbox.email);
-      setEmails(
-        data.emails.map((e: any) => ({
-      ...e,
-      timestamp: new Date(e.received_at).toLocaleString(),
-    }))
-  );
-    }
+      const data = await inboxDetails(inbox.id);
 
-    initInbox();
-    
-  }, [])
-
-  useEffect(() => {
-    if(!emailAddress) return;
-    const fetchEmails = async() => {
-      const data = await inboxDetails(emailAddress);
       setEmails(
         data.emails.map((e: any) => ({
           ...e,
-          body: e.body,
           timestamp: new Date(e.received_at).toLocaleString(),
         }))
       );
-    }
+    };
+
+    initInbox();
+  }, []);
+
+  useEffect(() => {
+    if (!inboxId) return;
+
+    const fetchEmails = async () => {
+      const data = await inboxDetails(inboxId);
+
+      setEmails(
+        data.emails.map((e: any) => ({
+          ...e,
+          timestamp: new Date(e.received_at).toLocaleString(),
+        }))
+      );
+    };
 
     fetchEmails();
 
-    const interval = setInterval(fetchEmails, 5000)
-    clearInterval(interval)
-  }, [])
+    const interval = setInterval(fetchEmails, 5000);
 
-const handleRefresh = async () => {
-  if (!emailAddress) return;
+    return () => {
+      clearInterval(interval);
+    };
+  }, [inboxId]);
 
-  setIsRefreshing(true);
-  await dummyEmail(emailAddress);
+  const handleRefresh = async () => {
+    if (!inboxId) return;
 
-  const data = await inboxDetails(emailAddress);
-  setEmails(
-    data.emails.map((e: any) => ({
-      ...e,
-      timestamp: new Date(e.received_at).toLocaleString(),
-    }))
-  );
+    setIsRefreshing(true);
 
-  setIsRefreshing(false);
-};
+    await dummyEmail(inboxId);
 
+    const data = await inboxDetails(inboxId);
 
-const handleRegenerate = async() => {
-  const data = await create_inbox();
-  setEmailAddress(data.email)
-  setEmails([])
-  setSelectedEmail(null)
-}
+    setEmails(
+      data.emails.map((e: any) => ({
+        ...e,
+        timestamp: new Date(e.received_at).toLocaleString(),
+      }))
+    );
+
+    setIsRefreshing(false);
+  };
+
+  const handleRegenerate = async () => {
+    const data = await create_inbox();
+
+    setSelectedEmail(null);
+    setEmails([]);
+
+    setInboxId(data.id);
+    setEmailAddress(data.email);
+
+    await dummyEmail(data.id);
+
+    const newData = await inboxDetails(data.id);
+
+    setEmails(
+      newData.emails.map((e: any) => ({
+        ...e,
+        timestamp: new Date(e.received_at).toLocaleString(),
+      }))
+    );
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 pt-32 pb-12 min-h-[calc(100vh-140px)] flex flex-col gap-8 relative">
@@ -172,7 +192,17 @@ const handleRegenerate = async() => {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    onClick={() => setSelectedEmail(email)}
+                    onClick={async () => {
+                      setSelectedEmail(email);
+                      if (!email.is_read) {
+                        await markEmailRead(email.id);
+                        setEmails(prev =>
+                          prev.map(e =>
+                            e.id === email.id ? { ...e, is_read: true } : e
+                          )
+                        );
+                      }
+                    }}
                     className={`w-full text-left p-6 border-b border-white/5 transition-all group relative ${
                       selectedEmail?.id === email.id ? 'bg-red-950/10' : 'hover:bg-zinc-900/40'
                     }`}
@@ -199,7 +229,7 @@ const handleRegenerate = async() => {
           </div>
         </div>
 
-        {/* vontent viewer */}
+        {/* content viewer */}
         <div className="lg:col-span-8 bg-zinc-950 border border-white/5 flex flex-col relative overflow-hidden">
           <AnimatePresence mode="wait">
             {selectedEmail ? (
